@@ -32,32 +32,34 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// creating new short url
+app.post("/urls", (req, res) => {
+  // console.log(req.body);  // Log the POST request body to the console
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+
+  res.redirect(`/urls/${shortURL}`); // Respond with 'Ok' (we will replace this)
+});
+
+// displaying the create new url form
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL]
+  };
 
   res.render("urls_show", templateVars)
 });
 
-app.post("/urls", (req, res) => {
-  // console.log(req.body);  // Log the POST request body to the console
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = {
-    longURL: req.body.longURL
-  }
-  res.send("URL received!"); // Respond with 'Ok' (we will replace this)
+app.get('/u/:shortURL', (req, res) => {
+  const redirection = urlDatabase[req.params.shortURL];
+  res.redirect(redirection);
 });
-
-app.get("/u/:shortURL", (req, res) => {
-  // console.log("longURL:", urlDatabase[req.params.shortURL]);
-  const longURL = urlDatabase[req.params.shortURL]
-  res.redirect(longURL);
-});
-
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`tinyapp listening on port ${PORT}!`);
 });
