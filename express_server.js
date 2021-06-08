@@ -41,7 +41,11 @@ app.get("/urls", (req, res) => {
 
 // displaying the create new url form
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies.username
+  };
+
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
