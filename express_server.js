@@ -38,14 +38,8 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
 
-  res.redirect(`/urls/${shortURL}`); // Respond with 'Ok' (we will replace this)
+  res.redirect(`/urls`);
 });
-
-app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect('/urls');
-})
 
 // displaying the create new url form
 app.get("/urls/new", (req, res) => {
@@ -61,10 +55,26 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars)
 });
 
+// redirecting to the actual URL
 app.get('/u/:shortURL', (req, res) => {
   const redirection = urlDatabase[req.params.shortURL];
   res.redirect(redirection);
 });
+
+// editing an URL
+app.post("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+
+  urlDatabase[shortURL].longURL = req.body.updatedURL;
+  res.redirect("/urls");
+})
+
+// deleting an URL
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  res.redirect('/urls');
+})
 
 app.listen(PORT, () => {
   console.log(`tinyapp listening on port ${PORT}!`);
