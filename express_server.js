@@ -18,7 +18,6 @@ function generateRandomString() {
   return Math.random().toString(36).substring(7);
 };
 
-
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
