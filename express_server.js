@@ -3,11 +3,11 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
-app.set("view engine", "ejs");
 
+app.set("view engine", "ejs");
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -19,20 +19,23 @@ function generateRandomString() {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.send("hello!");
 });
 
 // logging in
-app.post("/login", (req, res) => {
+app.get("/login", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    username: req.cookies.username,
   };
   res.render("urls_index", templateVars);
 });
 
 // list of my urls
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies.username};
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies.username
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -46,8 +49,7 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL]
   };
-
-  res.render("urls_show", templateVars)
+  res.render("urls_show", templateVars);
 });
 
 // redirecting to the actual URL
@@ -74,8 +76,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // editing an URL
 app.post("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
-
-  urlDatabase[shortURL].longURL = req.body.updatedURL;
+  const longURL = req.body.longURL;
+  urlDatabase[shortURL] = longURL;
   res.redirect("/urls");
 });
 
