@@ -41,17 +41,23 @@ const users = {
 routing
 */
 
-app.get("/", (req, res) => {
-  res.send("hello!");
+// homepage
+app.get('/', (req, res) => {
+  if (req.cookies.userID) {
+    res.redirect('/urls');
+  } else {
+    res.redirect('/login');
+  }
 });
 
 // list of my urls
-app.get("/urls", (req, res) => {
+app.get('/urls', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     user: users[req.cookies['user_id']]
   };
-  res.render("urls_index", templateVars);
+
+  res.render('urls_index', templateVars);
 });
 
 // displaying the create new url form
@@ -70,15 +76,18 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL]
+    longURL: urlDatabase[req.params.shortURL].longURL,
+    user: users[req.cookies['user_id']]
   };
   res.render("urls_show", templateVars);
 });
 
 // redirecting to the actual URL
 app.get('/u/:shortURL', (req, res) => {
-  const redirection = urlDatabase[req.params.shortURL];
-  res.redirect(redirection);
+  if (urlDatabase[req.params.shortURL]) {
+    res.redirect(urlDatabase[req.params.shortURL].longURL);
+  }
+
 });
 
 // creating new short url
@@ -99,7 +108,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // editing an URL
 app.post("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = req.body.longURL;
+  const longURL = urlDatabase[shortURL][req.body.longURL];
   urlDatabase[shortURL] = longURL;
   res.redirect("/urls");
 });
