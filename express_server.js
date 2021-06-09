@@ -27,10 +27,6 @@ const users = {
   }
 }
 
-function generateRandomString() {
-  return Math.random().toString(36).substring(7);
-};
-
 app.get("/", (req, res) => {
   res.send("hello!");
 });
@@ -53,6 +49,9 @@ app.get("/register", (req, res) => {
 
 // adding newly registered user to user objects
 app.post("/register", (req, res) => {
+  if (req.body.email = "" && req.body.password = "") {
+    res.status(404);
+  } if ()
   const userID = generateRandomString();
 
   users[userID] = {
