@@ -1,14 +1,23 @@
+// config
 const express = require("express");
 const app = express();
 const PORT = 8080;
+
 const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
+
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
-app.use(bodyParser.urlencoded({extended: true}));
-
 app.set("view engine", "ejs");
 
+// functions
+const {
+  findEmail,
+  generateRandomString
+} = require('./helperFunctions');
+
+// variables
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -26,6 +35,11 @@ const users = {
     password: "123"
   }
 }
+
+///////////////////////////////////////////////////////////////
+/*
+routing
+*/
 
 app.get("/", (req, res) => {
   res.send("hello!");
@@ -49,20 +63,29 @@ app.get("/register", (req, res) => {
 
 // adding newly registered user to user objects
 app.post("/register", (req, res) => {
-  if (req.body.email = "" && req.body.password = "") {
-    res.status(404);
-  } if ()
-  const userID = generateRandomString();
+  if (req.body.email && req.body.password) {
 
-  users[userID] = {
-    userID,
-    email: req.body.email,
-    password: req.body.password
-  };
-  console.log(users);
+    if (!findEmail(req.body.email, users)) {
+      const userID = generateRandomString();
 
-  res.cookie('user_id', userID);
-  res.redirect("/urls");
+      users[userID] = {
+        userID,
+        email: req.body.email,
+        password: req.body.password
+      };
+
+      res.cookie('user_id', userID);
+      res.redirect("/urls");
+
+    } else {
+      const errorMessage = 'cannot create an account with an email that is already in use.';
+      res.status(400).render('urls_error', {user: users[req.session.userID], errorMessage});
+    }
+
+  } else {
+    const errorMessage = 'you left your email or password empty! :( please make sure both fields are filled in.)';
+    res.status(400).render('urls_error', {user: users[req.session.userID], errorMessage});
+  }
 });
 
 // list of my urls
