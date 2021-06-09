@@ -19,8 +19,8 @@ const {
 
 // variables
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
 
 const users = {
@@ -56,11 +56,15 @@ app.get("/urls", (req, res) => {
 
 // displaying the create new url form
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies['user_id']]
-  };
+  if (req.cookies.userID) {
+    const templateVars = {
+      user: users[req.cookies['user_id']]
+    };
 
-  res.render("urls_new", templateVars);
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect('/login');
+  };
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -157,8 +161,6 @@ app.post("/register", (req, res) => {
     res.status(400).render('urls_error', {user: users[req.cookies.userID], errorMessage});
   }
 });
-
-
 
 // logging out and clearing cookies
 app.post("/logout", (req, res) => {
