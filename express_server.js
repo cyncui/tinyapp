@@ -14,7 +14,8 @@ app.set("view engine", "ejs");
 // functions
 const {
   findEmail,
-  generateRandomString
+  generateRandomString,
+  urlsForUser
 } = require('./helperFunctions');
 
 // variables
@@ -52,8 +53,9 @@ app.get('/', (req, res) => {
 
 // list of my urls
 app.get('/urls', (req, res) => {
+  const userUrls = urlsForUser(req.cookies.userID, urlDatabase);
   const templateVars = {
-    urls: urlDatabase,
+    urls: userUrls,
     user: users[req.cookies['user_id']]
   };
 
@@ -98,19 +100,32 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-// deleting an URL
+// deleting an URL if it belongs to the user
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const userUrls = urlsForUser(req.cookies.userID, urlDatabase);
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect('/urls');
+
+  if (req.cookies.userID && req.cookies.userID === urlDatabase[shortURL].userID) {
+    delete urlDatabase[shortURL];
+    res.redirect('/urls');
+  } else {
+    const errorMessage = "oops! you don't have permission to do that."
+    res.status(401).render('urls_error', {user: users[req.cookies.userID], errorMessage});
+  }
 });
 
-// editing an URL
+// editing an URL if it belongs to the user
 app.post("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL][req.body.longURL];
-  urlDatabase[shortURL] = longURL;
-  res.redirect("/urls");
+
+  if (req.cookies.userID && req.cookies.userID === urlDatabase[shortURL].userID) {
+    urlDatabase[shortURL] = longURL;
+    res.redirect("/urls");
+  } else {
+    const errorMessage = "oops! you don't have permission to do that."
+    res.status(401).render('urls_error', {user: users[req.cookies.userID], errorMessage});
+  }
 });
 
 app.post("/urls/:id", (req, res) => {
