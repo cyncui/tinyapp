@@ -9,7 +9,7 @@ const findEmail = (email, userSet) => {
     }
   }
 
-  return undefined;
+  return false;
 }
 
 module.exports = {

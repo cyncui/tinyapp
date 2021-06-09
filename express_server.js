@@ -58,13 +58,12 @@ app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies['user_id']],
   };
-  res.render("urls_registration", templateVars);
+  res.render("urls_register", templateVars);
 });
 
 // adding newly registered user to user objects
 app.post("/register", (req, res) => {
   if (req.body.email && req.body.password) {
-
     if (!findEmail(req.body.email, users)) {
       const userID = generateRandomString();
 
@@ -75,16 +74,14 @@ app.post("/register", (req, res) => {
       };
 
       res.cookie('user_id', userID);
-      res.redirect("/urls");
-
+      res.redirect('/urls');
     } else {
       const errorMessage = 'cannot create an account with an email that is already in use.';
-      res.status(400).render('urls_error', {user: users[req.session.userID], errorMessage});
+      res.status(400).render('urls_error', {user: users[req.cookies.userID], errorMessage});
     }
-
   } else {
-    const errorMessage = 'you left your email or password empty! :( please make sure both fields are filled in.)';
-    res.status(400).render('urls_error', {user: users[req.session.userID], errorMessage});
+    const errorMessage = 'you left your email or password empty! :( please make sure both fields are filled in.';
+    res.status(400).render('urls_error', {user: users[req.cookies.userID], errorMessage});
   }
 });
 
