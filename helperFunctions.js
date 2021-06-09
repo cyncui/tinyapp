@@ -5,7 +5,7 @@ const generateRandomString = () => {
 const findEmail = (email, userSet) => {
   for (const user in userSet) {
     if (userSet[user].email === email) {
-      return database[user];
+      return userSet[user];
     }
   }
 
