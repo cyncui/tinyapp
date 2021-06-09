@@ -1,40 +1,55 @@
+// config
 const express = require("express");
 const app = express();
 const PORT = 8080;
+
 const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
+
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
-app.use(bodyParser.urlencoded({extended: true}));
-
 app.set("view engine", "ejs");
 
+// functions
+const {
+  findEmail,
+  generateRandomString
+} = require('./helperFunctions');
+
+// variables
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-function generateRandomString() {
-  return Math.random().toString(36).substring(7);
-};
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "one@example.com",
+    password: "abc"
+  },
+ "user2RandomID": {
+    id: "user2RandomID",
+    email: "two2@example.com",
+    password: "123"
+  }
+}
+
+///////////////////////////////////////////////////////////////
+/*
+routing
+*/
 
 app.get("/", (req, res) => {
   res.send("hello!");
-});
-
-// logging in
-app.get("/login", (req, res) => {
-  const templateVars = {
-    username: req.cookies.username,
-  };
-  res.render("urls_index", templateVars);
 });
 
 // list of my urls
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies.username
+    user: users[req.cookies['user_id']]
   };
   res.render("urls_index", templateVars);
 });
@@ -42,7 +57,7 @@ app.get("/urls", (req, res) => {
 // displaying the create new url form
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies.username
+    user: users[req.cookies['user_id']]
   };
 
   res.render("urls_new", templateVars);
@@ -90,15 +105,64 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-// logging in and saving the cookie
-app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  res.redirect("/urls");
+// login page
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies['user_id']],
+  };
+  res.render("urls_login", templateVars);
 });
+
+// logging in
+app.post("/login", (req, res) => {
+  const loggedInUser = findEmail(req.body.email, users);
+
+  if (loggedInUser && (req.body.password === loggedInUser.password)) {
+    res.cookie("user_id", loggedInUser.userID);
+    res.redirect("/urls");
+  } else {
+    const errorMessage = 'incorrect password! are you sure you entered it correctly? 🤔';
+    res.status(403).render('urls_error', {user: users[req.cookies.userID], errorMessage});
+  }
+});
+
+// registration page
+app.get("/register", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies['user_id']],
+  };
+  res.render("urls_register", templateVars);
+});
+
+// registering
+app.post("/register", (req, res) => {
+  if (req.body.email && req.body.password) {
+    if (!findEmail(req.body.email, users)) {
+      const userID = generateRandomString();
+
+      users[userID] = {
+        userID,
+        email: req.body.email,
+        password: req.body.password
+      };
+
+      res.cookie('user_id', userID);
+      res.redirect('/urls');
+    } else {
+      const errorMessage = 'cannot create an account with an email that is already in use.';
+      res.status(400).render('urls_error', {user: users[req.cookies.userID], errorMessage});
+    }
+  } else {
+    const errorMessage = 'you left your email or password empty! :( please make sure both fields are filled in.';
+    res.status(400).render('urls_error', {user: users[req.cookies.userID], errorMessage});
+  }
+});
+
+
 
 // logging out and clearing cookies
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
