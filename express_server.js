@@ -27,7 +27,7 @@ const urlDatabase = {};
 const users = {};
 
 /*
-routing
+routing below
 */
 
 // homepage - redirects to /urls if logged in, /login otherwise
@@ -47,7 +47,7 @@ app.get('/urls', (req, res) => {
   const usersUrls = urlsForUser(userID, urlDatabase);
   const templateVars = { urls: usersUrls, user: users[userID] };
 
-  if (!userID) {
+  if (!users[userID]) {
     res.redirect('/login');
     return;
   }
