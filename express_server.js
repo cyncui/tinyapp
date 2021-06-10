@@ -9,6 +9,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
+const bcrypt = require('bcrypt');
+
 app.set("view engine", "ejs");
 
 // functions
@@ -89,7 +91,6 @@ app.get('/u/:shortURL', (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     res.redirect(urlDatabase[req.params.shortURL].longURL);
   }
-
 });
 
 // creating new short url
@@ -144,8 +145,9 @@ app.get("/login", (req, res) => {
 // logging in
 app.post("/login", (req, res) => {
   const loggedInUser = findEmail(req.body.email, users);
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
 
-  if (loggedInUser && (req.body.password === loggedInUser.password)) {
+  if (loggedInUser && bcrypt.hashSync(req.body.password, hashedPassword)) {
     res.cookie("user_id", loggedInUser.userID);
     res.redirect("/urls");
   } else {
@@ -167,13 +169,14 @@ app.post("/register", (req, res) => {
   if (req.body.email && req.body.password) {
     if (!findEmail(req.body.email, users)) {
       const userID = generateRandomString();
+      const hashedPassword = bcrypt.hashSync(req.body.password,  10);
 
       users[userID] = {
         userID,
         email: req.body.email,
-        password: req.body.password
+        password: hashedPassword
       };
-
+      console.log(users);
       res.cookie('user_id', userID);
       res.redirect('/urls');
     } else {
