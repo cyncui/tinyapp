@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
   <title>TinyApp</title>
 </head>
+
 <body>
   <%- include('partials/_header') %>
   <main style="margin: 1em;">
@@ -27,7 +28,7 @@
              <td><%= url %></td>
              <td><%= urls[url].longURL %></td>
              <td>
-               <form method="POST" action="/urls/<%= url %>">
+               <form method="GET" action="/urls/<%= url %>">
                  <button type="submit" class="btn btn-outline-primary">edit</button>
                </form>
              </td>
