@@ -2,14 +2,16 @@
 const express = require("express");
 const app = express();
 const PORT = 8080;
-
+const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
-
-const cookieParser = require("cookie-parser");
-app.use(cookieParser());
-
 const bcrypt = require('bcrypt');
+
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieSession({
+  name: 'session',
+  keys: ["secret1", "secret2"],
+  maxAge: 24 * 60 * 60 * 1000
+}));
 
 app.set("view engine", "ejs");
 
@@ -46,7 +48,7 @@ routing
 
 // homepage
 app.get('/', (req, res) => {
-  if (req.cookies.userID) {
+  if (req.session.userID) {
     res.redirect('/urls');
   } else {
     res.redirect('/login');
@@ -55,20 +57,23 @@ app.get('/', (req, res) => {
 
 // list of my urls
 app.get('/urls', (req, res) => {
-  const userUrls = urlsForUser(req.cookies.userID, urlDatabase);
-  const templateVars = {
-    urls: userUrls,
-    user: users[req.cookies['user_id']]
+  if (req.session.userID) {
+    const userUrls = urlsForUser(req.session.userID, urlDatabase);
+    const templateVars = {
+      urls: userUrls,
+      user: users[req.session['user_id']]
+    };
+    res.render('urls_index', templateVars);
+  } else {
+    res.redirect('/login');
   };
-
-  res.render('urls_index', templateVars);
 });
 
 // displaying the create new url form
 app.get("/urls/new", (req, res) => {
-  if (req.cookies.userID) {
+  if (req.session.userID) {
     const templateVars = {
-      user: users[req.cookies['user_id']]
+      user: users[req.session['user_id']]
     };
 
     res.render("urls_new", templateVars);
@@ -81,7 +86,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.cookies['user_id']]
+    user: users[req.session['user_id']]
   };
   res.render("urls_show", templateVars);
 });
@@ -103,15 +108,15 @@ app.post("/urls", (req, res) => {
 
 // deleting an URL if it belongs to the user
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userUrls = urlsForUser(req.cookies.userID, urlDatabase);
+  const userUrls = urlsForUser(req.session.userID, urlDatabase);
   const shortURL = req.params.shortURL;
 
-  if (req.cookies.userID && req.cookies.userID === urlDatabase[shortURL].userID) {
+  if (req.session.userID && req.session.userID === urlDatabase[shortURL].userID) {
     delete urlDatabase[shortURL];
     res.redirect('/urls');
   } else {
     const errorMessage = "oops! you don't have permission to do that."
-    res.status(401).render('urls_error', {user: users[req.cookies.userID], errorMessage});
+    res.status(401).render('urls_error', {user: users[req.session.userID], errorMessage});
   }
 });
 
@@ -120,12 +125,12 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL][req.body.longURL];
 
-  if (req.cookies.userID && req.cookies.userID === urlDatabase[shortURL].userID) {
+  if (req.session.userID && req.session.userID === urlDatabase[shortURL].userID) {
     urlDatabase[shortURL] = longURL;
     res.redirect("/urls");
   } else {
     const errorMessage = "oops! you don't have permission to do that."
-    res.status(401).render('urls_error', {user: users[req.cookies.userID], errorMessage});
+    res.status(401).render('urls_error', {user: users[req.session.userID], errorMessage});
   }
 });
 
@@ -137,7 +142,7 @@ app.post("/urls/:id", (req, res) => {
 // login page
 app.get("/login", (req, res) => {
   const templateVars = {
-    user: users[req.cookies['user_id']],
+    user: users[req.session['user_id']],
   };
   res.render("urls_login", templateVars);
 });
@@ -152,14 +157,14 @@ app.post("/login", (req, res) => {
     res.redirect("/urls");
   } else {
     const errorMessage = 'incorrect password! are you sure you entered it correctly? 🤔';
-    res.status(403).render('urls_error', {user: users[req.cookies.userID], errorMessage});
+    res.status(403).render('urls_error', {user: users[req.session.userID], errorMessage});
   }
 });
 
 // registration page
 app.get("/register", (req, res) => {
   const templateVars = {
-    user: users[req.cookies['user_id']],
+    user: users[req.session['user_id']],
   };
   res.render("urls_register", templateVars);
 });
@@ -176,22 +181,22 @@ app.post("/register", (req, res) => {
         email: req.body.email,
         password: hashedPassword
       };
-      console.log(users);
-      res.cookie('user_id', userID);
+
+      req.session.user_id = userID;
       res.redirect('/urls');
     } else {
       const errorMessage = 'cannot create an account with an email that is already in use.';
-      res.status(400).render('urls_error', {user: users[req.cookies.userID], errorMessage});
+      res.status(400).render('urls_error', {user: users[req.session.userID], errorMessage});
     }
   } else {
     const errorMessage = 'you left your email or password empty! :( please make sure both fields are filled in.';
-    res.status(400).render('urls_error', {user: users[req.cookies.userID], errorMessage});
+    res.status(400).render('urls_error', {user: users[req.session.userID], errorMessage});
   }
 });
 
 // logging out and clearing cookies
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/urls");
 });
 
