@@ -17,10 +17,10 @@ app.set("view engine", "ejs");
 
 // functions
 const {
-  findEmail,
   generateRandomString,
-  urlsForUser
-} = require('./helperFunctions');
+  urlsForUser,
+  getUserByEmail
+} = require('./helpers');
 
 // variables
 const urlDatabase = {};
@@ -92,7 +92,7 @@ app.get("/login", (req, res) => {
 
 // logging in - redirects to urls page if credentials are correct
 app.post("/login", (req, res) => {
-  const loggedInUser = findEmail(req.body.email, users);
+  const loggedInUser= getUserByEmail(req.body.email, users);
   const hashedPassword = bcrypt.hashSync(req.body.password, 10);
 
   if (loggedInUser && bcrypt.hashSync(req.body.password, hashedPassword)) {
@@ -123,7 +123,7 @@ app.get("/register", (req, res) => {
 // registering - redirects to urls page upon successful registeration
 app.post("/register", (req, res) => {
   if (req.body.email && req.body.password) {
-    if (!findEmail(req.body.email, users)) {
+    if (!getUserByEmail(req.body.email, users)) {
       const userID = generateRandomString();
       const hashedPassword = bcrypt.hashSync(req.body.password,  10);
 
