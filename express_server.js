@@ -80,7 +80,7 @@ app.get("/login", (req, res) => {
     user: users[req.session.userID],
   };
   
-  if (!users[req.session.userID]) {
+  if (!req.session.userID) {
     res.render("urls_login", templateVars);
     return;
   }

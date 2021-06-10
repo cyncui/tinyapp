@@ -10,10 +10,10 @@
       <a class="nav-item nav-link" href="/urls/new">create new URL</a>
     </div>
     <% if (!user ){  %>
-      <a class="btn btn-primary" href="http://localhost:8080/login" style="margin-left: 65%;">login</a>
-      <a class="btn btn-primary" href="http://localhost:8080/register" style="margin-left: 3%;">register</a>
+      <a class="btn btn-primary" href="http://localhost:8080/login" style="margin-left: 82%;">login</a>
+      <a class="btn btn-primary" href="http://localhost:8080/register" style="margin-left: 2%;">register</a>
     <% } else { %>
-    <form class="form-inline my-1" style= "padding-left:  50%" action="/logout" method="POST">
+    <form class="form-inline my-1" style= "padding-left:  78%" action="/logout" method="POST">
       <h6 style="padding-right: 1em">logged in as: <%= user.email %></h6>
       <button type="submit" class="btn btn-outline-primary">logout!</button>
     </form>
