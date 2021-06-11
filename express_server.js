@@ -48,7 +48,8 @@ app.get('/urls', (req, res) => {
   const templateVars = { urls: usersUrls, user: users[userID] };
 
   if (!users[userID]) {
-    res.redirect('/login');
+    const errorMessage = 'you have to be logged in to do that!';
+    res.status(401).render('urls_error', {user: users[req.session.userID], errorMessage});
     return;
   }
   res.render('urls_index', templateVars);
@@ -57,7 +58,7 @@ app.get('/urls', (req, res) => {
 
 // new url creation - adds new url to database & redirects to the short url page
 app.post("/urls", (req, res) => {
-  if (!req.session.userID) {
+  if (!users[req.session.userID]) {
     const errorMessage = 'you have to be logged in to do that!';
     res.status(401).render('urls_error', {user: users[req.session.userID], errorMessage});
     return;
@@ -80,7 +81,7 @@ app.get("/login", (req, res) => {
     user: users[req.session.userID],
   };
   
-  if (!req.session.userID) {
+  if (!users[req.session.userID]) {
     res.render("urls_login", templateVars);
     return;
   }
@@ -92,13 +93,12 @@ app.get("/login", (req, res) => {
 
 // logging in - redirects to urls page if credentials are correct
 app.post("/login", (req, res) => {
-  const loggedInUser= getUserByEmail(req.body.email, users);
+  const loggedInUser = getUserByEmail(req.body.email, users);
   const hashedPassword = bcrypt.hashSync(req.body.password, 10);
 
   if (loggedInUser && bcrypt.hashSync(req.body.password, hashedPassword)) {
-    req.session.userID = loggedInUser.userID;
+    req.session.userID = loggedInUser;
     res.redirect('/urls');
-    return;
   } else {
     const errorMessage = 'incorrect password! are you sure you entered it correctly? 🤔';
     res.status(403).render('urls_error', {user: users[req.session.userID], errorMessage});
@@ -128,11 +128,10 @@ app.post("/register", (req, res) => {
       const hashedPassword = bcrypt.hashSync(req.body.password,  10);
 
       users[userID] = {
-        userID,
-        email: req.body.email,
-        password: hashedPassword
+        "id": userID,
+        "email": req.body.email,
+        "password": hashedPassword
       };
-
       req.session.userID = userID;
       res.redirect('/urls');
       return;
@@ -158,7 +157,8 @@ app.get("/urls/new", (req, res) => {
     res.render("urls_new", templateVars);
     return;
   } else {
-    res.redirect('/login');
+    const errorMessage = 'you have to be logged in to do that!';
+    res.status(401).render('urls_error', {user: users[req.session.userID], errorMessage});
     return;
   };
 });
@@ -206,12 +206,11 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 // editing a longURL if it belongs to the user
-app.post("/urls/:shortURL/edit", (req, res) => {
+app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL][req.body.longURL];
 
   if (users[req.session.userID] && req.session.userID === urlDatabase[shortURL].userID) {
-    urlDatabase[shortURL] = longURL;
+    urlDatabase[shortURL].longURL = req.body.updatedURL;
     res.redirect("/urls");
     return;
   } else {
