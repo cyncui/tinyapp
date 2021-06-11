@@ -2,8 +2,9 @@
 You can say goodbye to long links with this fullstack application, built with Node and Expresss, that allows users to shorten any links they wish (à la bit.ly).
 
 ## Final Product
-!["screenshot description"](#)
-!["screenshot description"](#)
+!["registration page"](https://github.com/cyncui/tinyapp/blob/master/docs/registration.png?raw=true)
+!["short url and edit page"](https://github.com/cyncui/tinyapp/blob/master/docs/short-url.png?raw=true)
+!["urls page for logged in user"](https://github.com/cyncui/tinyapp/blob/master/docs/urls-page.png?raw=true)
 
 ## Dependencies
 * Node.js
