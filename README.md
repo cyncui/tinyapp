@@ -16,7 +16,8 @@ You can say goodbye to long links with this fullstack application, built with No
 ## Initial Config
 1. Fork and clone the repo to your local machine
 2. Install all dependencies (using `npm install`)
-3. Visit `localhost:8080` on your browser and enjoy!
+3. Start the app by running `npm start` from your terminal in the cloned repo.
+4. Visit `localhost:8080` on your browser and enjoy!
 
 ## Features
 #### REGISTRATION AND LOGIN
